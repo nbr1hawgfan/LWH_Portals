@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>LWH Portals</title>
+<meta name="theme-color" content="#111111">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="LWH Portals">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>
+  :root {
+    --red: #c8102e;
+    --red-dark: #9e0c24;
+    --black: #111111;
+    --ink: #1a1a1a;
+    --muted: #5f5f5f;
+    --line: #dcdcdc;
+    --bg: #f3f3f3;
+    --card: #ffffff;
+    --tabbar-h: 62px;
+    --header-h: 52px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* ---------- Header ---------- */
+  header {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: calc(var(--header-h) + env(safe-area-inset-top));
+    padding: env(safe-area-inset-top) 12px 0;
+    background: var(--black);
+    color: #fff;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    border-bottom: 3px solid var(--red);
+    z-index: 10;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .brand .mark {
+    width: 36px; height: 30px; background: var(--red);
+    display: grid; place-items: center;
+    font-weight: 800; font-size: 12px; letter-spacing: .3px;
+  }
+  .brand h1 {
+    font-size: 16px; font-weight: 700; letter-spacing: .3px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .hdr-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .icon-btn {
+    width: 38px; height: 38px;
+    background: transparent; border: 1px solid #3a3a3a; color: #fff;
+    display: grid; place-items: center; cursor: pointer;
+  }
+  .icon-btn:active { background: #2a2a2a; }
+  .icon-btn svg { width: 18px; height: 18px; }
+
+  /* ---------- Views ---------- */
+  main {
+    position: fixed;
+    top: calc(var(--header-h) + env(safe-area-inset-top) + 3px);
+    bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
+    left: 0; right: 0;
+  }
+  .view { position: absolute; inset: 0; display: none; }
+  .view.active { display: block; }
+  .view iframe { width: 100%; height: 100%; border: 0; background: #fff; display: block; }
+
+  .loading {
+    position: absolute; inset: 0; display: grid; place-items: center;
+    background: var(--bg); color: var(--muted); font-size: 14px;
+    pointer-events: none; transition: opacity .25s;
+  }
+  .loading.hide { opacity: 0; }
+
+  /* Launch card (for portals that can't be embedded) */
+  .launch { height: 100%; overflow-y: auto; padding: 20px 16px; }
+  .launch-card {
+    max-width: 520px; margin: 0 auto;
+    background: var(--card); border: 1px solid var(--line);
+    border-top: 4px solid var(--red);
+    padding: 24px 20px;
+  }
+  .launch-card h2 { font-size: 20px; margin-bottom: 6px; }
+  .launch-card p { color: var(--muted); font-size: 14px; line-height: 1.5; margin-bottom: 20px; }
+  .big-btn {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    width: 100%; padding: 16px;
+    background: var(--red); color: #fff; text-decoration: none;
+    font-size: 17px; font-weight: 700; letter-spacing: .3px;
+    border: 0; cursor: pointer;
+  }
+  .big-btn:active { background: var(--red-dark); }
+  .big-btn svg { width: 20px; height: 20px; }
+  .tip {
+    margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line);
+    font-size: 13px; color: var(--muted); line-height: 1.5;
+  }
+
+  /* ---------- Tab bar ---------- */
+  nav {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    height: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+    background: var(--black);
+    display: flex;
+    z-index: 10;
+  }
+  nav button {
+    flex: 1; background: transparent; border: 0; color: #9a9a9a;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    font-size: 12px; font-weight: 600; letter-spacing: .3px; cursor: pointer;
+    border-top: 3px solid transparent;
+  }
+  nav button svg { width: 22px; height: 22px; }
+  nav button.active { color: #fff; border-top-color: var(--red); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="mark">LWH</div>
+    <h1 id="title">LWH Portals</h1>
+  </div>
+  <div class="hdr-actions">
+    <button class="icon-btn" id="btnReload" title="Reload" aria-label="Reload">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg>
+    </button>
+    <button class="icon-btn" id="btnExternal" title="Open full-screen" aria-label="Open full-screen">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square"><path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v6H4V6h6"/></svg>
+    </button>
+  </div>
+</header>
+
+<main id="views"></main>
+
+<nav id="tabs"></nav>
+
+<script>
+/* =====================================================================
+   PORTAL LIST — edit here.
+   embed: true  -> shows inside the app
+   embed: false -> shows a launch button that opens it full-screen
+   If the Mobile Portal ever gets https + allows embedding, change its
+   url to https:// and set embed: true. Nothing else needs to change.
+   ===================================================================== */
+const PORTALS = [
+  {
+    id: "customer",
+    name: "Customer Portal",
+    short: "Customer",
+    url: "https://portal.logistics-warehouse.biz/Default.aspx",
+    embed: true,
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><rect x="3" y="4" width="18" height="16"/><path d="M3 9h18"/><path d="M7 13h6M7 16h4"/></svg>'
+  },
+  {
+    id: "mobile",
+    name: "Mobile Portal",
+    short: "Mobile",
+    url: "http://mobile.logistics-warehouse.biz/",
+    embed: false,
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><rect x="6" y="2" width="12" height="20"/><path d="M11 18h2"/></svg>'
+  }
+];
+
+const views = document.getElementById("views");
+const tabs = document.getElementById("tabs");
+const titleEl = document.getElementById("title");
+let current = null;
+
+function store(key, val) {
+  try {
+    if (val === undefined) return localStorage.getItem(key);
+    localStorage.setItem(key, val);
+  } catch (e) { return null; }
+}
+
+PORTALS.forEach(p => {
+  // View
+  const v = document.createElement("section");
+  v.className = "view";
+  v.id = "view-" + p.id;
+
+  if (p.embed) {
+    // iframe is created on first open, then kept alive so logins/pages persist between tabs
+    v.innerHTML = '<div class="loading">Loading ' + p.name + '…</div>';
+  } else {
+    v.innerHTML =
+      '<div class="launch"><div class="launch-card">' +
+        '<h2>' + p.name + '</h2>' +
+        '<p>This portal opens in its own window. When you\'re done, come back to this app to switch portals.</p>' +
+        '<a class="big-btn" href="' + p.url + '" target="_blank" rel="noopener">' +
+          'Open ' + p.name +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square"><path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v6H4V6h6"/></svg>' +
+        '</a>' +
+        '<div class="tip">Tip: to get back here, use your phone\'s app switcher or tap the LWH Portals icon on your home screen.</div>' +
+      '</div></div>';
+  }
+  views.appendChild(v);
+
+  // Tab
+  const b = document.createElement("button");
+  b.id = "tab-" + p.id;
+  b.innerHTML = p.icon + '<span>' + p.short + '</span>';
+  b.addEventListener("click", () => show(p.id));
+  tabs.appendChild(b);
+});
+
+function ensureFrame(p) {
+  const v = document.getElementById("view-" + p.id);
+  if (v.querySelector("iframe")) return;
+  const f = document.createElement("iframe");
+  f.src = p.url;
+  f.title = p.name;
+  f.setAttribute("allow", "clipboard-read; clipboard-write; camera; geolocation; fullscreen");
+  f.addEventListener("load", () => {
+    const l = v.querySelector(".loading");
+    if (l) l.classList.add("hide");
+  });
+  v.prepend(f);
+}
+
+function show(id) {
+  const p = PORTALS.find(x => x.id === id) || PORTALS[0];
+  current = p;
+  PORTALS.forEach(x => {
+    document.getElementById("view-" + x.id).classList.toggle("active", x.id === p.id);
+    document.getElementById("tab-" + x.id).classList.toggle("active", x.id === p.id);
+  });
+  if (p.embed) ensureFrame(p);
+  titleEl.textContent = p.name;
+  document.getElementById("btnReload").style.display = p.embed ? "" : "none";
+  store("lwh-portals-tab", p.id);
+}
+
+document.getElementById("btnReload").addEventListener("click", () => {
+  if (!current || !current.embed) return;
+  const f = document.querySelector("#view-" + current.id + " iframe");
+  if (f) f.src = current.url;
+});
+
+document.getElementById("btnExternal").addEventListener("click", () => {
+  if (current) window.open(current.url, "_blank", "noopener");
+});
+
+show(store("lwh-portals-tab") || PORTALS[0].id);
+
+// Service worker (caches only this app's shell — never the portals)
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
