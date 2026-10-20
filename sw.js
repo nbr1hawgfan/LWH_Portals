@@ -1,7 +1,7 @@
 // LWH Portals service worker
 // Caches only this app's own files so it opens instantly.
 // Portal traffic (other domains) is never touched.
-const CACHE = "lwh-portals-v3";
+const CACHE = "lwh-portals-v4";
 const SHELL = [
   "./",
   "./index.html",
